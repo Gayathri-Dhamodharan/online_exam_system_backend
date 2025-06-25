@@ -29,7 +29,6 @@ app.get("/", (req, res) => {
   res.send({ message: `server is running ${process.env.PORT}` });
 });
 
-// app.use("/v1", router);
 console.log(process.env.MONGO_URI,"ferdfg");
 
 mongoose
@@ -42,3 +41,4 @@ mongoose
     });
   })
   .catch((err) => console.log(err));
+ 
