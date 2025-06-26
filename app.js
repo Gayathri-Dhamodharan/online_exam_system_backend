@@ -3,10 +3,10 @@ const connection = require("./config/db");
 const userRouter = require("./routes/auth");
 
 // adminroutes
-const subjectRoutes      = require("./routes/subjectRoutes");
-const classRoutes        = require("./routes/classRoutes");
-const questionRoutes     = require("./routes/questionRoutes");
-const examTemplateRoutes = require("./routes/examTemplateRoutes");
+const subjectRoutes      = require("./routes/adminRoutes/subjectRoutes");
+// const classRoutes        = require("./routes/adminRoutes/classRoutes");
+const questionRoutes     = require("./routes/adminRoutes/questionRoutes");
+const examTemplateRoutes = require("./routes/adminRoutes/examTemplateRoutes");
 
 require("dotenv").config();
 const cors = require("cors");
@@ -19,11 +19,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/upload", express.static("src/fileStorage"));
 connection();
 
-app.use("api/user", userRouter);
+app.use("/api/user", userRouter);
 
 // admin
 app.use("/api/subjects",      subjectRoutes);
-app.use("/api/classes",       classRoutes);
+// app.use("/api/classes",       classRoutes);
 app.use("/api/questions",     questionRoutes);
 app.use("/api/exam-templates",examTemplateRoutes);
 

@@ -1,9 +1,18 @@
-const Question = require("../models/Question");
+const Question = require("../../models/adminModel/Question");
+
 
 exports.create = async (req, res) => {
   try {
-    const q = await Question.create(req.body);
-    res.status(201).json(q);
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ error: "Only admin can create Questions" });
+    }
+
+    const ques = await Question.create({
+      ...req.body,
+      createdBy: req.user._id, // ✅ always save the creator ID
+    });
+
+    res.status(201).json(ques);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -12,11 +21,11 @@ exports.create = async (req, res) => {
 exports.list = async (req, res) => {
   try {
     const filter = {};
-    if (req.query.class)   filter.class   = req.query.class;
+    // if (req.query.class)   filter.class   = req.query.class;
     if (req.query.subject) filter.subject = req.query.subject;
     if (req.query.type)    filter.type    = req.query.type;
     const list = await Question.find(filter)
-      .populate("class")
+      // .populate("class")
       .populate("subject");
     res.json(list);
   } catch (err) {
@@ -26,11 +35,11 @@ exports.list = async (req, res) => {
 
 exports.getById = async (req, res) => {
   try {
-    const q = await Question.findById(req.params.id)
-      .populate("class")
+    const ques = await Question.findById(req.params.id)
+      // .populate("class")
       .populate("subject");
-    if (!q) return res.status(404).json({ error: "Not found" });
-    res.json(q);
+    if (!ques) return res.status(404).json({ error: "Not found" });
+    res.json(ques);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -38,9 +47,9 @@ exports.getById = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
-    const q = await Question.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!q) return res.status(404).json({ error: "Not found" });
-    res.json(q);
+    const ques = await Question.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!ques) return res.status(404).json({ error: "Not found" });
+    res.json(ques);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

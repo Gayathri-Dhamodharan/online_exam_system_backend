@@ -1,12 +1,12 @@
-const router      = require("express").Router();
-const ctrl        = require("../controllers/subjectController");
-const { verifyToken } = require("../middleware/userAuthToken");
+const router = require("express").Router();
+const subCtrl = require("../../controllers/adminControllers/subjectController");
+const {verifyToken} = require ("../../middleware/userAuthToken");
 
 router.use(verifyToken);
-router.post   ("/",      ctrl.create);
-router.get    ("/",      ctrl.getAll);
-router.get    ("/:id",   ctrl.getById);
-router.put    ("/:id",   ctrl.update);
-router.delete ("/:id",   ctrl.delete);
+router.post   ("/",      subCtrl.create);
+router.get("/",          subCtrl.getAll);
+router.get("/:id",        subCtrl.getById);
+router.put("/:id",          subCtrl.update);
+router.delete("/:id",      subCtrl.delete);
 
 module.exports = router;

@@ -1,22 +1,58 @@
-const Subject = require("../models/Subject");
+const Subject = require("../../models/adminModel/Subject");
 
+
+
+// exports.create = async (req, res) => {
+//   try {
+//     const subj = await Subject.create(req.body);
+//     res.status(201).json(subj);
+//   } catch (err) {
+//     res.status(400).json({ error: err.message });
+//   }
+// };
 exports.create = async (req, res) => {
   try {
-    const subj = await Subject.create(req.body);
+    // Check if user is admin
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ error: "Only admin can create subjects" });
+    }
+
+    // Add admin ID to the subject
+    const subj = await Subject.create({
+      ...req.body,
+      createdBy: req.user._id,
+    });
+
     res.status(201).json(subj);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
 
+
+// exports.getAll = async (req, res) => {
+//   try {
+//     const list = await Subject.find();
+//     res.json(list);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
+
 exports.getAll = async (req, res) => {
   try {
-    const list = await Subject.find();
+    let filter = {};
+    if (req.user.role === "admin") {
+      filter = { createdBy: req.user._id };
+    }
+
+    const list = await Subject.find(filter);
     res.json(list);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 exports.getById = async (req, res) => {
   try {

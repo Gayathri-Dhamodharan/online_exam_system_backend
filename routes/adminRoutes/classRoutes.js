@@ -1,12 +1,14 @@
-const router      = require("express").Router();
-const ctrl        = require("../controllers/classController");
-const { verifyToken } = require("../middleware/userAuthToken");
+
+
+const router  = require("express").Router();
+const clsCtrl = require("../../controllers/adminControllers/classController");
+const { verifyToken } = require("../../middleware/userAuthToken")
 
 router.use(verifyToken);
-router.post   ("/",      ctrl.create);
-router.get    ("/",      ctrl.getAll);
-router.get    ("/:id",   ctrl.getById);
-router.put    ("/:id",   ctrl.update);
-router.delete ("/:id",   ctrl.delete);
+router.post("/",      clsCtrl.create);
+router.get("/",       clsCtrl.getAll);
+router.get("/:id",    clsCtrl.getById);
+router.put("/:id",     clsCtrl.update);
+router.delete ("/:id",   clsCtrl.delete);
 
 module.exports = router;
