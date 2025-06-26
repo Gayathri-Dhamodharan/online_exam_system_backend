@@ -1,180 +1,143 @@
-const jwt = require("../middleware/userAuthToken");
-const { User, Contact, Review } = require("../models/User");
-const bcrypt = require("bcrypt");
-const fs = require("fs");
-const { sendMailToUser } = require("../utils/mailsend");
+// controllers/authController.js
+const bcrypt   = require('bcrypt');
+const jwtSvc   = require('../middleware/userAuthToken');
+const { User } = require('../models/User');
+const fs       = require('fs');
+const { sendMailToUser } = require('../utils/mailsend');
 
-const userRegister = async (req, res) => {
-  const { userName, email, password } = req.body;
+async function userRegister(req, res) {
   try {
-    const findEmail = await User.findOne({ email });
-    if (findEmail) {
-      return res.status(500).json({
-        message: "Email already exists.",
-      });
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      role,
+      class: studentClass,
+      grade,
+      graduateAt,
+      joinDate
+    } = req.body;
+
+    // 1) check email
+    if (await User.findOne({ email })) {
+      return res.status(400).json({ message: 'Email already exists.' });
     }
-    await sendMailToUser(email, userName, password);
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const data = {
-      ...req.body,
-      password: hashedPassword,
-    };
 
-    await User.create(data);
+    // 2) optional: send welcome email
+    await sendMailToUser(email, `${firstName} ${lastName}`, password);
 
-    res.status(200).json({
-      message: "User created successfully.",
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+    // 3) hash pw
+    const hashed = await bcrypt.hash(password, 10);
+
+    // 4) build doc
+    const data = { firstName, lastName, email, password: hashed, role };
+    if (role === 'student') {
+      data.class = studentClass;
+      data.grade = grade;
+    } else {
+      data.graduateAt = new Date(graduateAt);
+      data.joinDate   = new Date(joinDate);
+    }
+
+    // 5) save
+    const user = await User.create(data);
+
+    // 6) jwt
+    const token = jwtSvc.generateToken(user);
+
+    res.status(201).json({ message: 'User created successfully.', user, token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
   }
-};
+}
 
-const userLogin = async (req, res) => {
-  const { email, password } = req.body;
+async function userLogin(req, res) {
   try {
-    const findEmail = await User.findOne({ email });
-    if (!findEmail) {
-      return res.status(500).json({
-        message: "Email not registered.",
-      });
-    }
-    const validPassword = await bcrypt.compare(password, findEmail.password);
-    if (!validPassword) {
-      return res.status(500).json({
-        message: "Invalid password.",
-      });
-    }
-    const token = await jwt.generateToken(findEmail);
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ message: 'Email not registered.' });
 
-    res.status(200).json({
-      message: "User logged in successfully.",
-      token,
-      findEmail,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+    if (!(await bcrypt.compare(password, user.password))) {
+      return res.status(400).json({ message: 'Invalid password.' });
+    }
+
+    const token = jwtSvc.generateToken(user);
+    res.status(200).json({ message: 'Logged in.', token, user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
   }
-};
+}
 
-const updateUserProfile = async (req, res) => {
+async function updateUserProfile(req, res) {
   try {
-    let { userId } = req.params;
+    const { userId } = req.params;
+    const file      = req.file;
+    let data        = { ...req.body };
 
-    let file = req.file;
-    let newFile = req.file;
-
-    let data = {
-      ...req.body,
-    };
-
-    if (newFile) {
-      const oldFile = await User.findById({ _id: userId });
-      if (!oldFile) {
-        return res.status(404).json({ Message: "Data Not Found.." });
+    if (file) {
+      const old = await User.findById(userId);
+      if (old?.profileFileName) {
+        fs.unlinkSync(old.filePath);
       }
-      if (oldFile.profileFileName) {
-        fs.unlinkSync(`${oldFile.filePath}`);
-
-        data.profileFileName = newFile.filename;
-        data.filePath = newFile.path;
-        data.fileType = newFile.mimetype;
-      } else {
-        data = {
-          ...data,
-          profileFileName: file.filename,
-          filePath: file.path,
-          fileType: file.mimetype,
-        };
-      }
+      data.profileFileName = file.filename;
+      data.filePath        = file.path;
+      data.fileType        = file.mimetype;
     }
-    const Data = await User.findByIdAndUpdate(userId, data, {
-      new: true,
-    });
 
-    res.status(200).json({
-      status: "200",
-      Data,
-      message: "profile updated successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+    const updated = await User.findByIdAndUpdate(userId, data, { new: true });
+    res.status(200).json({ message: 'Profile updated.', Data: updated });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
   }
-};
+}
 
-const getSingleUser = async (req, res) => {
+async function getSingleUser(req, res) {
   try {
-    let { userId } = req.params;
-    const Data = await User.findOne({ _id: userId, isDeleted: false });
-    if (!Data) {
-      return res.status(404).json({
-        status: "404",
-        message: " User Not Found",
-      });
-    }
-    res.status(200).json({
-      status: "200",
-      Data,
-      message: " Fetch User successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+    const { userId } = req.params;
+    const user = await User.findOne({ _id: userId, isDeleted: false });
+    if (!user) return res.status(404).json({ message: 'User not found.' });
+    res.status(200).json({ Data: user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
   }
-};
-const getAllUser = async (req, res) => {
-  try {
-    const Data = await User.find({ isDeleted: false });
-    res.status(200).json({
-      status: "200",
-      Data,
-      message: " Fetch All User successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
-  }
-};
+}
 
-const DeleteUser = async (req, res) => {
+async function getAllUser(req, res) {
   try {
-    let { userId } = req.params;
-    const Data = await User.findByIdAndUpdate(
+    const users = await User.find({ isDeleted: false });
+    res.status(200).json({ Data: users });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
+}
+
+async function DeleteUser(req, res) {
+  try {
+    const { userId } = req.params;
+    const upd = await User.findByIdAndUpdate(
       userId,
       { isDeleted: true },
-      {
-        new: true,
-      }
+      { new: true }
     );
-    if (!Data) {
-      return res.status(404).json({
-        status: "404",
-        message: " User Not Found",
-      });
-    }
-    res.status(200).json({
-      status: "200",
-      message: " User Deleted successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+    if (!upd) return res.status(404).json({ message: 'User not found.' });
+    res.status(200).json({ message: 'User deleted.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
   }
-};
+}
+
 module.exports = {
   userRegister,
   userLogin,
   updateUserProfile,
   getSingleUser,
   getAllUser,
-  DeleteUser,
+  DeleteUser
 };

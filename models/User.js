@@ -40,7 +40,7 @@ const userSchema = new mongoose.Schema(
 
     // Admin-specific fields
     graduateAt: {
-      type: Date,
+      type: String,
     },
     joinDate: {
       type: Date,

@@ -20,10 +20,10 @@ const sendMailToUser = async (email, userName, password) => {
       }
     });
     const mailOptions = {
-      from: "sriganesan.k@colanonline.com",
+      from: "gayathri.dhamodharan@colanonline.com",
       to: email,
-      subject: "Welcome To Our Smart HR ",
-      text: `Hello ${userName},\n\nWelcome to  Smart HR! Here are your login credentials:\n\nUserMail: ${email}\nPassword: ${password}\n\nPlease keep this information secure.`,
+      subject: "Welcome To Our Online Examination system ",
+      text: `Hello ${userName},\n\nWelcome to  Online Examination system! Here are your login credentials:\n\nUserMail: ${email}\nPassword: ${password}\n\nPlease keep this information secure.`,
     };
 
     await transporter.sendMail(mailOptions);
