@@ -4,7 +4,6 @@ const userRouter = require("./routes/auth");
 
 // adminroutes
 const subjectRoutes      = require("./routes/adminRoutes/subjectRoutes");
-// const classRoutes        = require("./routes/adminRoutes/classRoutes");
 const questionRoutes     = require("./routes/adminRoutes/questionRoutes");
 const examTemplateRoutes = require("./routes/adminRoutes/examTemplateRoutes");
 
@@ -23,7 +22,6 @@ app.use("/api/user", userRouter);
 
 // admin
 app.use("/api/subjects",      subjectRoutes);
-// app.use("/api/classes",       classRoutes);
 app.use("/api/questions",     questionRoutes);
 app.use("/api/exam-templates",examTemplateRoutes);
 

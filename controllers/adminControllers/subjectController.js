@@ -1,15 +1,6 @@
 const Subject = require("../../models/adminModel/Subject");
 
 
-
-// exports.create = async (req, res) => {
-//   try {
-//     const subj = await Subject.create(req.body);
-//     res.status(201).json(subj);
-//   } catch (err) {
-//     res.status(400).json({ error: err.message });
-//   }
-// };
 exports.create = async (req, res) => {
   try {
     // Check if user is admin
@@ -29,15 +20,6 @@ exports.create = async (req, res) => {
   }
 };
 
-
-// exports.getAll = async (req, res) => {
-//   try {
-//     const list = await Subject.find();
-//     res.json(list);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
 
 exports.getAll = async (req, res) => {
   try {
