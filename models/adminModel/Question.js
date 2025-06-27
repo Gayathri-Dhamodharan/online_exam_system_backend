@@ -25,6 +25,8 @@ const questionSchema = new mongoose.Schema(
         "8th Grade",
         "9th Grade",
         "10th Grade",
+        "11th Grade",
+        "12th Grade",
       ],
       required: true,
     },

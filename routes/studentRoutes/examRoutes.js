@@ -1,7 +1,7 @@
 // routes/student/examRoutes.js
-const router          = require('express').Router()
-const ctrl            = require('../../controllers/studentControllers/examController')
-const { verifyToken } = require('../../middleware/userAuthToken')
+const router          = require("express").Router()
+const ctrl            = require("../../controllers/studentController/examController")
+const { verifyToken } = require("../../middleware/userAuthToken")
 
 // all routes require valid JWT
 router.use(verifyToken)

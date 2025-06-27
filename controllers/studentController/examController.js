@@ -1,6 +1,6 @@
 // controllers/studentControllers/examController.js
-const ExamTemplate = require('../../models/adminModel/ExamTemplate')
-const StudentExam  = require('../../models/StudentExam')
+const ExamTemplate = require("../../models/adminModel/ExamTemplate")
+const StudentExam  = require("../../models/studentModel/studentExam")
 
 /**
  * GET /student/exams
@@ -53,35 +53,82 @@ exports.getExamDetails = async (req, res) => {
  * body: { questionId, selected }
  * → record or update the student’s answer (no grading yet)
  */
+// exports.submitAnswer = async (req, res) => {
+//   try {
+//     const { questionId, selected } = req.body
+//     let attempt = await StudentExam.findOne({
+//       student:      req.user._id,
+//       examTemplate: req.params.examId
+//     })
+//     if (!attempt) {
+//       attempt = new StudentExam({
+//         student:      req.user._id,
+//         examTemplate: req.params.examId,
+//         answers:      []
+//       })
+//     }
+//     // upsert this question’s answer
+//     const idx = attempt.answers.findIndex(a =>
+//       a.questionId.toString() === questionId
+//     )
+//     if (idx >= 0) {
+//       attempt.answers[idx].selected = selected
+//     } else {
+//       attempt.answers.push({ questionId, selected })
+//     }
+//     await attempt.save()
+//     res.json({ message: 'Answer saved.' })
+//   } catch (err) {
+//     res.status(500).json({ error: err.message })
+//   }
+// }
+
+
+
 exports.submitAnswer = async (req, res) => {
   try {
-    const { questionId, selected } = req.body
-    let attempt = await StudentExam.findOne({
-      student:      req.user._id,
-      examTemplate: req.params.examId
-    })
-    if (!attempt) {
-      attempt = new StudentExam({
-        student:      req.user._id,
-        examTemplate: req.params.examId,
-        answers:      []
-      })
+    const {
+      student,
+      examTemplate,
+      answers,
+      status = "in_progress",
+      startTime,
+      endTime,
+    } = req.body;
+
+    if (!student || !examTemplate || !Array.isArray(answers)) {
+      return res
+        .status(400)
+        .json({ error: "Missing required fields or answers array." });
     }
-    // upsert this question’s answer
-    const idx = attempt.answers.findIndex(a =>
-      a.questionId.toString() === questionId
-    )
-    if (idx >= 0) {
-      attempt.answers[idx].selected = selected
+
+    // Upsert exam attempt
+    let attempt = await StudentExam.findOne({ student, examTemplate });
+
+    if (attempt) {
+      attempt.answers = answers;
+      attempt.status = status;
+      if (startTime) attempt.startTime = startTime;
+      if (endTime) attempt.endTime = endTime;
     } else {
-      attempt.answers.push({ questionId, selected })
+      attempt = new StudentExam({
+        student,
+        examTemplate,
+        answers,
+        status,
+        startTime,
+        endTime,
+      });
     }
-    await attempt.save()
-    res.json({ message: 'Answer saved.' })
+
+    await attempt.save();
+    return res.json({ message: "Exam answers submitted successfully." });
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    console.error("Error submitting exam answers:", err);
+    res.status(500).json({ error: err.message });
   }
-}
+};
+
 
 /**
  * POST /student/exams/:examId/complete

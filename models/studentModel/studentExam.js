@@ -1,5 +1,5 @@
 // models/StudentExam.js
-const mongoose = require('mongoose')
+const mongoose = require("mongoose")
 
 const studentExamSchema = new mongoose.Schema({
   student: {

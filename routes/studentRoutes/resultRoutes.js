@@ -1,7 +1,7 @@
 // routes/student/resultRoutes.js
-const router          = require('express').Router()
-const ctrl            = require('../../controllers/studentControllers/resultController')
-const { verifyToken } = require('../../middleware/userAuthToken')
+const router          = require("express").Router()
+const ctrl            = require("../../controllers/studentController/resultController")
+const { verifyToken } = require("../../middleware/userAuthToken")
 
 // require JWT + student role
 router.use(verifyToken)

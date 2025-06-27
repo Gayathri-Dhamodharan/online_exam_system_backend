@@ -1,7 +1,7 @@
 // controllers/studentControllers/resultController.js
-const Result       = require('../../models/Result')
-const StudentExam  = require('../../models/StudentExam')
-const ExamTemplate = require('../../models/adminModel/ExamTemplate')
+const Result       = require("../../models/studentModel/result")
+const StudentExam  = require("../../models/studentModel/studentExam")
+const ExamTemplate = require("../../models/adminModel/ExamTemplate")
 
 /**
  * GET /student/results/:examId
