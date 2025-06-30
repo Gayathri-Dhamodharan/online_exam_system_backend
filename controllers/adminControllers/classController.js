@@ -5,7 +5,7 @@ exports.getAllClasses = async (req, res) => {
   try {
     console.log('Headers:', req.headers);
     const list = await Class.find()
-      .populate('createdBy','name email')
+      // .populate('createdBy','name email')
       .sort({ createdAt: -1 });
     res.json(list);
   } catch (err) {
@@ -21,7 +21,7 @@ exports.getClassById = async (req, res) => {
   }
   try {
     const cls = await Class.findById(id)
-      .populate('createdBy','name email');
+      // .populate('createdBy','name email');
     if (!cls) return res.status(404).json({ error: 'Class not found.' });
     res.json(cls);
   } catch (err) {
@@ -42,23 +42,15 @@ exports.createClass = async (req, res) => {
   }
 
 
-  const createdBy = req.user?._id;
-  if (!createdBy || !mongoose.isValidObjectId(createdBy)) {
-    return res.status(401).json({ error: "Unauthorized: missing or invalid user." });
-  }
-
   try {
     
     const newClass = await Class.create({
       name: name.trim(),
       section: section.trim(),
-      createdBy,
     });
 
     
     const populated = await Class.findById(newClass._id)
-      .populate('createdBy', 'name email');
-
     
     res.status(201).json(populated);
 

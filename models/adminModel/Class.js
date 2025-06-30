@@ -1,11 +1,6 @@
 const mongoose = require("mongoose");
 
 const classSchema = new mongoose.Schema({
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Users",
-    required: true,
-  },
   name: {
     type: String,
     required: true,

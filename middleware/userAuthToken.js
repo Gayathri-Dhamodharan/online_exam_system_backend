@@ -54,7 +54,7 @@ const key = process.env.SECRECT_KEY;
 
 const generateToken = (user) => {
   // Include _id and role directly in token payload
-  const token = jwt.sign({ _id: user._id, role: user.role }, key, {
+  const token = jwt.sign({ _id: user._id, role: user.role,class:role.class }, key, {
     expiresIn: "1d",
   });
   return token;

@@ -1,5 +1,5 @@
 // controllers/questionController.js
-
+const mongoose = require("mongoose");
 const Question = require("../../models/adminModel/Question");
 
 exports.createQuestion = async (req, res) => {

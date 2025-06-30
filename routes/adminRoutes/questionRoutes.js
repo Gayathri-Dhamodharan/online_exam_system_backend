@@ -12,6 +12,6 @@ router.use(verifyToken);
 router.post('/', questionCtrl.createQuestion);
 router.get('/:id', questionCtrl.getQuestion);
 router.delete('/:id', questionCtrl.deleteQuestion);
-router.patch('/:id', questionCtrl.updateQuestion);
+router.put('/:id', questionCtrl.updateQuestion);
 
 module.exports = router;
