@@ -41,7 +41,7 @@ app.use("/api/exam_result", resultRoutes);
 
 
 app.use("/", (req, res) => {
-  res.send("I'm alive");
+  res.send("Port is running in 5000 and db connected successfully");
 });
 // console.log("Mongo URI:", process.env.MONGO_URI);
 
