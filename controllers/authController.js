@@ -19,18 +19,18 @@ async function userRegister(req, res) {
       joinDate,
     } = req.body;
 
-    // 1) check email
+   
     if (await User.findOne({ email })) {
       return res.status(400).json({ message: "Email already exists." });
     }
 
-    // 2) optional: send welcome email
+    
     await sendMailToUser(email, `${firstName} ${lastName}`, password);
 
-    // 3) hash pw
+  
     const hashed = await bcrypt.hash(password, 10);
 
-    // 4) build doc
+    
     const data = { firstName, lastName, email, password: hashed, role };
     if (role === "student") {
       data.class = studentClass;
@@ -40,10 +40,10 @@ async function userRegister(req, res) {
       data.joinDate = new Date(joinDate);
     }
 
-    // 5) save
+
     const user = await User.create(data);
 
-    // 6) jwt
+    
     const token = jwtSvc.generateToken(user);
 
     res

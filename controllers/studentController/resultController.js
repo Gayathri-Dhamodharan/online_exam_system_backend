@@ -1,75 +1,53 @@
-// controllers/studentControllers/resultController.js
-const Result       = require("../../models/studentModel/result")
-const StudentExam  = require("../../models/studentModel/studentExam")
-const ExamTemplate = require("../../models/adminModel/ExamTemplate")
 
-/**
- * GET /student/results/:examId
- */
-exports.getResult = async (req, res) => {
+const Result = require("../../models/studentModel/result");
+
+exports.getAllResults = async (req, res) => {
   try {
-    const studentId = req.user._id
-    const examId    = req.params.examId
+  
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: admins only' });
+    }
 
-    // 1) find the finished attempt
-    const attempt = await StudentExam.findOne({
-      student:      studentId,
-      examTemplate: examId,
-      status:       'completed'
-    })
-    if (!attempt)
-      return res.status(403).json({ error: 'No completed attempt found' })
+    const results = await Result
+      .find()
+      .populate('studentId', 'firstName lastName role')   
+      .populate('examId',   'subject totalMark passMark'); 
 
-    // 2) return cached Result if exists
-    let stored = await Result.findOne({ studentExam: attempt._id })
-    if (stored) return res.json(stored)
-
-    // 3) load template for correct answers & text
-    const tmpl = await ExamTemplate.findById(examId)
-    if (!tmpl)
-      return res.status(404).json({ error: 'Exam template missing' })
-
-    // 4) build per-question detail & aggregates
-    let attended = 0, correct = 0
-    const details = tmpl.questions.map(q => {
-      const ans = attempt.answers.find(a =>
-        a.questionId.toString() === q._id.toString()
-      )
-      const selected  = ans ? ans.selected : null
-      const isCorrect = ans && String(selected) === String(q.answer)
-
-      if (ans) {
-        attended++
-        if (isCorrect) correct++
-      }
-
-      return {
-        questionId:    q._id,
-        questionText:  q.questionText,
-        selected,
-        correctAnswer: q.answer,
-        isCorrect
-      }
-    })
-
-    const totalQ     = details.length
-    const wrong      = attended - correct
-    const notAtt     = totalQ - attended
-
-    // 5) cache the result
-    stored = await Result.create({
-      studentExam:  attempt._id,
-      student:      studentId,
-      examTemplate: examId,
-      attended,
-      notAttended:  notAtt,
-      correct,
-      wrong,
-      details
-    })
-
-    res.json(stored)
+    return res.json(results);
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    console.error('getAllResults error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
   }
-}
+};
+
+
+exports.getResultById = async (req, res) => {
+  try {
+    const resultId = req.params.id;
+
+    const result = await Result
+      .findById(resultId)
+      .populate('studentId', 'firstName lastName role')
+      .populate('examId',   'subject totalMark passMark');
+
+    if (!result) {
+      return res.status(404).json({ error: 'Result not found' });
+    }
+
+    if (req.user.role === 'student' &&
+        result.studentId._id.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({ error: 'Forbidden: not your result' });
+    }
+
+    return res.json(result);
+  } catch (err) {
+    console.error('getResultById error:', err);
+
+
+    if (err.kind === 'ObjectId') {
+      return res.status(400).json({ error: 'Invalid result ID' });
+    }
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};

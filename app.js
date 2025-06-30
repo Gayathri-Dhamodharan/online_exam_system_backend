@@ -3,13 +3,15 @@ const connection = require("./config/db");
 const userRouter = require("./routes/auth");
 
 // adminroutes
-const subjectRoutes      = require("./routes/adminRoutes/subjectRoutes");
+const subjectRoutes      = require("./routes/subjectRoutes");
+const classRoutes =require("./routes/classRoutes")
 const questionRoutes     = require("./routes/adminRoutes/questionRoutes");
-const examTemplateRoutes = require("./routes/adminRoutes/examTemplateRoutes");
+const examRoutes = require("./routes/examRoutes");
+const postValidateExamRoutes = require("./routes/studentRoutes/postValidateExam");
 
 // student routes
-const examination = require("./routes/studentRoutes/examRoutes");
-const examResult = require("./routes/studentRoutes/resultRoutes")
+// const examination = require("./routes/studentRoutes/examRoutes");
+ const resultRoutes = require("./routes/studentRoutes/resultRoutes")
 
 require("dotenv").config();
 const cors = require("cors");
@@ -23,15 +25,19 @@ app.use("/upload", express.static("src/fileStorage"));
 connection();
 
 app.use("/api/user", userRouter);
+app.use("/api/exam",examRoutes);
 
 // admin
 app.use("/api/subjects",      subjectRoutes);
+app.use("/api/class", classRoutes)
 app.use("/api/questions",     questionRoutes);
-app.use("/api/exam-templates",examTemplateRoutes);
+
+app.use('/api/exams', postValidateExamRoutes);
+
 
 // student
-app.use("/api/examination", examination);
-app.use("/api/exam_result", examResult);
+// app.use("/api/examination", examination);
+app.use("/api/exam_result", resultRoutes);
 
 
 app.use("/", (req, res) => {

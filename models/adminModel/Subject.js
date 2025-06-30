@@ -1,16 +1,21 @@
-
 const mongoose = require("mongoose");
 
 const subjectSchema = new mongoose.Schema(
   {
+     createdBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Users",
+          required: true,
+        },
     name: {
       type: String,
       required: true,
       unique: true,
+      enum: ["English", "Tamil", "Maths", "Science", "Social"],
     },
-    createdBy: {
+    class: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Users", 
+      ref: "Class",
       required: true,
     },
   },

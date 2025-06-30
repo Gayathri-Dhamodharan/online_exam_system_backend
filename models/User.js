@@ -1,12 +1,7 @@
 const mongoose = require("mongoose");
-const { v4 } = require("uuid");
 
 const userSchema = new mongoose.Schema(
   {
-    // _id: {
-    //   type: String,
-    //   default: v4,
-    // },
     firstName: {
       type: String,
       required: true,
@@ -33,34 +28,15 @@ const userSchema = new mongoose.Schema(
     // Student-specific fields
     class: {
       type: String,
+      enum:["10th Grade","12th Grade"],
+      required: true,
     },
-    grade: {
+    section: {
       type: String,
+      enum:["A","B","c"],
+      required: true,
     },
 
-    // Admin-specific fields
-    graduateAt: {
-      type: String,
-    },
-    joinDate: {
-      type: Date,
-    },
-
-    // File Upload
-    profileFileName: {
-      type: String,
-    },
-    filePath: {
-      type: String,
-    },
-    fileType: {
-      type: String,
-    },
-
-    isDeleted: {
-      type: Boolean,
-      default: false,
-    },
   },
   {
     timestamps: true,

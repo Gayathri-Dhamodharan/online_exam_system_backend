@@ -1,36 +1,68 @@
 // models/Result.js
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
 
-const resultSchema = new mongoose.Schema({
-  studentExam: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'StudentExam',
+const AnswerSchema = new Schema({
+  questionId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Question',
+    required: true
+  },
+  answer: {
+    type: String,
     required: true,
-    unique: true
-  },
-  student: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Users',
-    required: true
-  },
-  examTemplate: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'ExamTemplate',
-    required: true
-  },
-  attended:    { type: Number, required: true },
-  notAttended: { type: Number, required: true },
-  correct:     { type: Number, required: true },
-  wrong:       { type: Number, required: true },
-  details: [
-    {
-      questionId:    { type: mongoose.Schema.Types.ObjectId, required: true },
-      questionText:  { type: String, required: true },
-      selected:      { type: String, default: null },
-      correctAnswer: { type: String, required: true },
-      isCorrect:     { type: Boolean, required: true }
-    }
-  ]
-}, { timestamps: true })
+    trim: true
+  }
+}, { _id: false });
 
-module.exports = mongoose.model('Result', resultSchema)
+const ResultSchema = new Schema({
+  // Link back to the exam
+  examId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Exam',
+    required: true,
+    index: true
+  },
+
+  // Link to the student (you can populate for name, role, etc.)
+  studentId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Users',
+    required: true,
+    index: true
+  },
+
+  // Have we run the validation logic yet?
+  isValidated: {
+    type: Boolean,
+    required: true,
+    default: false
+  },
+
+  // Scores
+  markScored: {
+    type: Number,
+    required: true
+  },
+  totalMark: {
+    type: Number,
+    required: true
+  },
+
+  // Pass/fail
+  isPass: {
+    type: Boolean,
+    required: true
+  },
+
+  // The submitted answers
+  answers: {
+    type: [AnswerSchema],
+    required: true
+  }
+
+}, {
+  timestamps: true
+});
+
+module.exports = mongoose.model('Result', ResultSchema);

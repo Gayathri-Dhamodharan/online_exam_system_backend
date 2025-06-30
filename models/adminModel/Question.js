@@ -1,56 +1,69 @@
 const mongoose = require("mongoose");
+const { Schema } = mongoose;
 
-const questionSchema = new mongoose.Schema(
-  {
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Users",
-      required: true,
+const questionSchema = new Schema({
+  userId: {
+    id: {
+      type: Schema.Types.ObjectId,
+      ref: 'Users',
+      required: true
     },
-    subject: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Subject",
-      required: true,
-    },
-    class: {
+    role: {
       type: String,
-      enum: [
-        "1st Grade",
-        "2nd Grade",
-        "3rd Grade",
-        "4th Grade",
-        "5th Grade",
-        "6th Grade",
-        "7th Grade",
-        "8th Grade",
-        "9th Grade",
-        "10th Grade",
-        "11th Grade",
-        "12th Grade",
-      ],
+      enum: ['admin', 'student'], // whatever roles you allow
       required: true,
-    },
-
-    type: {
-      type: String,
-      enum: ["mcq", "true_false"],
-      required: true,
-    },
-    questionText: {
-      type: String,
-      required: true,
-    },
-    options: [{ type: String, required: true }],
-    answer: {
-      type: String,
-      required: true,
-    },
-    mark: {
-      type: Number,
-      required: true,
-    },
+      default: 'admin'                      // if you always want admin
+    }
   },
-  { timestamps: true }
-);
+  class: {
+    id: {
+      type: Schema.Types.ObjectId,
+      ref: 'Class',
+      required: true
+    },
+    name: {
+      type: String,
+      required: true
+    }
+  },
+  subject: {
+    id: {
+      type: Schema.Types.ObjectId,
+      ref: 'Subject',
+      required: true
+    },
+    name: {
+      type: String,
+      required: true
+    }
+  },
+  questionType: {
+    type: String,
+    enum: ['multiple-choice', 'true-false'],
+    required: true
+  },
+  questionText: {
+    type: String,
+    required: true,
+    trim: true,
+    unique: true
+  },
+  questionOptions: {
+    type: [String],
+    default: undefined
+  },
+  answer: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  marks: {
+    type: Number,
+    required: true,
+    default: 0
+  }
+}, {
+  timestamps: true
+});
 
-module.exports = mongoose.model("Question", questionSchema);
+module.exports = mongoose.model('Question', questionSchema);

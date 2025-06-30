@@ -1,66 +1,70 @@
 const Subject = require("../../models/adminModel/Subject");
+const mongoose = require('mongoose');
 
-
-exports.create = async (req, res) => {
+exports.getAllSubjects = async (req, res) => {
   try {
-    // Check if user is admin
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ error: "Only admin can create subjects" });
-    }
-
-    // Add admin ID to the subject
-    const subj = await Subject.create({
-      ...req.body,
-      createdBy: req.user._id,
-    });
-
-    res.status(201).json(subj);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
-
-
-exports.getAll = async (req, res) => {
-  try {
-    let filter = {};
-    if (req.user.role === "admin") {
-      filter = { createdBy: req.user._id };
-    }
-
-    const list = await Subject.find(filter);
+    const list = await Subject.find()
+      .populate('createdBy','name email')
+      .populate('class','name section')
+      .sort({ createdAt: -1 });
     res.json(list);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Server error.' });
   }
 };
 
 
-exports.getById = async (req, res) => {
+exports.getSubjectById = async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.isValidObjectId(id)) {
+    return res.status(400).json({ error: 'Invalid subject ID.' });
+  }
   try {
-    const subj = await Subject.findById(req.params.id);
-    if (!subj) return res.status(404).json({ error: "Not found" });
+    const subj = await Subject.findById(id)
+      .populate('createdBy','name email')
+      .populate('class','name section');
+    if (!subj) return res.status(404).json({ error: 'Subject not found.' });
     res.json(subj);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Server error.' });
   }
 };
 
-exports.update = async (req, res) => {
-  try {
-    const subj = await Subject.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!subj) return res.status(404).json({ error: "Not found" });
-    res.json(subj);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
 
-exports.delete = async (req, res) => {
+exports.createSubject = async (req, res) => {
+  const { name, class: classId } = req.body;
+
+  
+  if (!name || typeof name !== "string" || !name.trim()) {
+    return res.status(400).json({ error: "'name' is required and must be a non-empty string." });
+  }
+  if (!mongoose.isValidObjectId(classId)) {
+    return res.status(400).json({ error: "'class' must be a valid Class ID." });
+  }
+
+
+  const createdBy = req.user?.id;
+  if (!createdBy || !mongoose.isValidObjectId(createdBy)) {
+    return res.status(401).json({ error: "Unauthorized: missing or invalid user." });
+  }
+
   try {
-    await Subject.findByIdAndDelete(req.params.id);
-    res.json({ message: "Deleted" });
+    const newSubject = await Subject.create({
+      name: name.trim(),
+      class: classId,
+      createdBy,
+    });
+
+    const populated = await Subject.findById(newSubject._id)
+      .populate("createdBy", "name email")
+      .populate("class", "name section");
+
+    res.status(201).json(populated);
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error creating subject:", err);
+    res.status(500).json({ error: "Server error while creating subject." });
   }
 };
