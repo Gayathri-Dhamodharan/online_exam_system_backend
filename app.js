@@ -1,44 +1,51 @@
 const express = require("express");
-const http = require("http");
-const mongoose = require("mongoose");
+const connection = require("./config/db");
+const userRouter = require("./routes/auth");
 
-const bodyParser = require("body-parser");
-const dotenv = require("dotenv");
+// adminroutes
+const subjectRoutes      = require("./routes/subjectRoutes");
+const classRoutes =require("./routes/classRoutes")
+const questionRoutes     = require("./routes/adminRoutes/questionRoutes");
+const examRoutes = require("./routes/examRoutes");
+const postValidateExamRoutes = require("./routes/studentRoutes/postValidateExam");
+
+// student routes
+// const examination = require("./routes/studentRoutes/examRoutes");
+ const resultRoutes = require("./routes/studentRoutes/resultRoutes")
+
+require("dotenv").config();
 const cors = require("cors");
-const { log } = require("console");
-
-dotenv.config();
 
 const app = express();
-const server = http.createServer(app);
-const corsOptions = {
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true,
-};
 
-app.use(cors(corsOptions));
-app.use(bodyParser.json());
-app.use(
-  bodyParser.urlencoded({
-    extended: true,
-  })
-);
+app.use(cors(' '));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use("/upload", express.static("src/fileStorage"));
+connection();
 
-app.get("/", (req, res) => {
-  res.send({ message: `server is running ${process.env.PORT}` });
+app.use("/api/user", userRouter);
+app.use("/api/exam",examRoutes);
+
+// admin
+app.use("/api/subjects",      subjectRoutes);
+app.use("/api/class", classRoutes)
+app.use("/api/questions",     questionRoutes);
+
+app.use('/api/exams', postValidateExamRoutes);
+
+
+// student
+// app.use("/api/examination", examination);
+app.use("/api/exam_result", resultRoutes);
+
+
+app.use("/", (req, res) => {
+  res.send("I'm alive");
 });
+// console.log("Mongo URI:", process.env.MONGO_URI);
 
-// app.use("/v1", router);
-console.log(process.env.MONGO_URI,"ferdfg");
-
-mongoose
-  .connect(process.env.MONGO_URI) //, {useNewUrlParser: true,useUnifiedTopology: true}
-  .then(() => {
-    console.log("MongoDB connected");
-    server.listen(process.env.PORT || 5000, async () => {
-      console.log(`Server running on port ${process.env.PORT || 5000}`);
-     
-    });
-  })
-  .catch((err) => console.log(err));
+const port = process.env.PORT || 5000;
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
+});
