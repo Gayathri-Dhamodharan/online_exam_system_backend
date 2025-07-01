@@ -1,38 +1,21 @@
 // routes/examRoutes.js
-const  router   = require('express').Router();
-const examCtrl     = require('../controllers/examController');
-const { verifyToken } = require("../middleware/userAuthToken")
+const router = require("express").Router();
+const examCtrl = require("../controllers/examController");
+const { verifyToken } = require("../middleware/userAuthToken");
 
 // All exam routes require the user to be authenticated
 router.use(verifyToken);
+router.post("/create-exam", examCtrl.createExam);
 
-/**
- * Admin only:
- *   - Create a new exam
- *   - Update an existing exam
- *   - Delete an exam
- *   - Add a question to an exam
- *   - Remove a question from an exam
- */
-router
-  .route('/')
-  .post(examCtrl.createExam);
-
-router
-  .route('/:id')
-  .get(examCtrl.getExam)        // Admin sees full exam; student sees it (sans answers) only if class matches
-  .put(examCtrl.updateExam)     // Admin only
-  .delete(examCtrl.deleteExam); // Admin only
+router.post("/getall-exam/:classId/:subjId", examCtrl.getExam); // Admin sees full exam; student sees it (sans answers) only if class matches
+router.get("/get-exam/:id", verifyToken, examCtrl.getExam);
+router.put("/update-exam/:id", examCtrl.updateExam); // Admin only
+router.delete("/delete-exam/:id", examCtrl.deleteExam); // Admin only
 
 /**
  * Question management (admin only)
  */
-router
-  .route('/:id/questions')
-  .post(examCtrl.addQuestion);
-
-router
-  .route('/:id/questions/:questionId')
-  .delete(examCtrl.deleteQuestion);
+router.post("/:id/questions-exam", examCtrl.addQuestion);
+router.delete("/:id/questions-exam/:questionId", examCtrl.deleteQuestion);
 
 module.exports = router;

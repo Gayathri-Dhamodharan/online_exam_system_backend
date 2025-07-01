@@ -29,7 +29,7 @@ app.use("/api/exam",examRoutes);
 
 // admin
 app.use("/api/subjects",      subjectRoutes);
-app.use("/api/class", classRoutes)
+app.use("/api/class", classRoutes)  
 app.use("/api/questions",     questionRoutes);
 
 app.use('/api/exams', postValidateExamRoutes);
