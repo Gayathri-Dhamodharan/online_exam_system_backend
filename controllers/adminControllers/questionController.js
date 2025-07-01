@@ -53,6 +53,21 @@ exports.createQuestion = async (req, res) => {
   }
 };
 
+exports.getAllQuestions = async (req, res) => {
+  try {
+    const list = await Question.find()
+      .populate("userId.id", "name role")
+      .populate("class.id", "name")
+      .populate("subject.id", "name")
+      .sort({ createdAt: -1 });
+
+    return res.json(list);
+  } catch (err) {
+    console.error("Error fetching questions:", err);
+    return res.status(500).json({ error: "Server error." });
+  }
+};
+
 exports.getQuestion = async (req, res) => {
   try {
     const { id } = req.params;
