@@ -40,7 +40,7 @@ const questionSchema = new Schema(
     },
     questionType: {
       type: String,
-      enum: ["mcq", "True/False"],
+      enum: ["MCQ", "True/False"],
       required: true,
     },
     questionText: {

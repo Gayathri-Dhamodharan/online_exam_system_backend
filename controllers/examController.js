@@ -147,9 +147,9 @@ exports.getExamsByClassName = async (req, res) => {
     const { className } = req.params;
     console.log(className, "className");
     // choose which question fields to expose
-    let selectField = "questionText options questionType";
+    let selectField = "questionText questionOptions questionType";
     if (role === "admin") {
-      selectField = "questionText options answer questionType";
+      selectField = "questionText questionOptions answer questionType";
     }
 
     // find all exams whose embedded class.name matches
@@ -312,8 +312,10 @@ exports.attendExam = async (req, res) => {
         $push: {
           exams: {
             title: exam.title,
+            examDate: exam.startDate,
             score,
             totalQues: questions.length,
+            subject:exam.subject.name
           },
         },
       },
@@ -323,6 +325,20 @@ exports.attendExam = async (req, res) => {
     res.json({ message: "success" });
   } catch (err) {
     console.error("Error fetching exams by className:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+exports.getAttendedExams = async (req, res) => {
+  try {
+    const { _id } = req.user; // assuming user is authenticated
+
+    const user = await User.findById(_id).select("exams");
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    res.json({ attendedExams: user.exams });
+  } catch (err) {
+    console.error("Error fetching attended exams:", err);
     res.status(500).json({ error: "Server error" });
   }
 };

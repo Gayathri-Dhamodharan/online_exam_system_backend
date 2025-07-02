@@ -8,7 +8,7 @@ const classRoutes =require("./routes/classRoutes")
 const questionRoutes     = require("./routes/adminRoutes/questionRoutes");
 const examRoutes = require("./routes/examRoutes");
 // const postValidateExamRoutes = require("./routes/studentRoutes/postValidateExam");
-const studentDashboard = require("./routes/studentRoutes/studentDashboard")
+const userDashboardRoutes = require("./routes/studentRoutes/userDashboardRoutes");
 
 // student routes
 // const examination = require("./routes/studentRoutes/examRoutes");
@@ -38,6 +38,9 @@ app.use("/api/questions",     questionRoutes);
 // student
 // app.use("/api/examination", examination);
 app.use("/api/exam_result", resultRoutes);
+
+// userDashboard
+app.use("/api/user",userDashboardRoutes)
 
 
 app.use("/", (req, res) => {
