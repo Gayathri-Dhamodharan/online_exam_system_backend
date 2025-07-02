@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const Exam = require("../models/Exam");
+const Question = require("../models/adminModel/Question");
+const { User } = require("../models/User");
 
 // function sanitizeForStudent(examDoc) {
 //   const obj = examDoc.toObject({ virtuals: true });
@@ -143,7 +145,7 @@ exports.getExamsByClassName = async (req, res) => {
   try {
     const { role } = req.user;
     const { className } = req.params;
-
+    console.log(className, "className");
     // choose which question fields to expose
     let selectField = "questionText options questionType";
     if (role === "admin") {
@@ -151,13 +153,13 @@ exports.getExamsByClassName = async (req, res) => {
     }
 
     // find all exams whose embedded class.name matches
-    const exams = await Exam.find({ "class.name": className })
-      .populate("subject.id", "name")             // still populate the subject name
+    const exams = await Exam.find({ "class.name": className }) // still populate the subject name
       .populate({
         path: "selectedQuestions",
         select: selectField,
       });
 
+    console.log(exams, "exams");
     if (!exams || exams.length === 0) {
       return res
         .status(404)
@@ -170,7 +172,6 @@ exports.getExamsByClassName = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
-
 
 exports.updateExam = async (req, res) => {
   try {
@@ -275,6 +276,53 @@ exports.deleteQuestion = async (req, res) => {
     res.json(exam);
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+exports.attendExam = async (req, res) => {
+  try {
+    const { _id } = req.user;
+    // const { id } = req.params;
+
+    const { examId, questions } = req.body;
+
+    const exam = await Exam.findById(examId);
+    if (!exam) return res.status(404).json({ error: "Exam not found" });
+
+    const answeredQuesIds = questions.map((item) => item.ques_id);
+
+    // find all exams whose embedded class.name matches
+    const quesData = await Question.find({
+      _id: { $in: answeredQuesIds },
+    });
+
+    let score = 0;
+
+    questions.forEach((submitted) => {
+      const original = quesData.find((q) => q._id == submitted.ques_id);
+      if (original && original.answer == submitted.answer) {
+        score += 1;
+      }
+    });
+
+    await User.findByIdAndUpdate(
+      _id,
+      {
+        $push: {
+          exams: {
+            title: exam.title,
+            score,
+            totalQues: questions.length,
+          },
+        },
+      },
+      { new: true } // to return the updated document if needed
+    );
+
+    res.json({ message: "success" });
+  } catch (err) {
+    console.error("Error fetching exams by className:", err);
     res.status(500).json({ error: "Server error" });
   }
 };
