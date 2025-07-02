@@ -18,6 +18,7 @@ exports.createExam = async (req, res) => {
       return res.status(403).json({ error: "Admins only" });
 
     const {
+      title,
       class: examClass,
       subject,
       duration,
@@ -36,6 +37,7 @@ exports.createExam = async (req, res) => {
 
     const exam = new Exam({
       createdBy: { id: userData._id, role: userData.role },
+      title: title,
       class: {
         id: examClass._id,
         name: examClass.name,
@@ -56,6 +58,22 @@ exports.createExam = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
+  }
+};
+
+exports.getSingleExamById = async (req, res) => {
+  try {
+    const { examId } = req.params;
+
+    const data = await Exam.findById(examId).populate("selectedQuestions");
+
+    res.status(200).json({
+      status: "200",
+      data,
+      message: "Exam Detail Fetch Successfully",
+    });
+  } catch (error) {
+    console.log(error.message);
   }
 };
 
@@ -112,12 +130,47 @@ exports.getExam = async (req, res) => {
       return res.status(404).json({ error: "Exam not found" });
     }
 
-    res.json(exam);
+    res.json({ data: exam });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 };
+
+// controllers/examController.js
+
+exports.getExamsByClassName = async (req, res) => {
+  try {
+    const { role } = req.user;
+    const { className } = req.params;
+
+    // choose which question fields to expose
+    let selectField = "questionText options questionType";
+    if (role === "admin") {
+      selectField = "questionText options answer questionType";
+    }
+
+    // find all exams whose embedded class.name matches
+    const exams = await Exam.find({ "class.name": className })
+      .populate("subject.id", "name")             // still populate the subject name
+      .populate({
+        path: "selectedQuestions",
+        select: selectField,
+      });
+
+    if (!exams || exams.length === 0) {
+      return res
+        .status(404)
+        .json({ error: `No exams found for class "${className}"` });
+    }
+
+    res.json({ data: exams });
+  } catch (err) {
+    console.error("Error fetching exams by className:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 
 exports.updateExam = async (req, res) => {
   try {

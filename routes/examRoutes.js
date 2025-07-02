@@ -8,10 +8,11 @@ router.use(verifyToken);
 router.post("/create-exam", examCtrl.createExam);
 
 router.post("/getall-exam/:classId/:subjId", examCtrl.getExam); // Admin sees full exam; student sees it (sans answers) only if class matches
-router.get("/get-exam/:id", verifyToken, examCtrl.getExam);
+router.get("/get-exam/:id", examCtrl.getExam);
 router.put("/update-exam/:id", examCtrl.updateExam); // Admin only
 router.delete("/delete-exam/:id", examCtrl.deleteExam); // Admin only
-
+router.get("/class/:className", examCtrl.getExamsByClassName
+);
 /**
  * Question management (admin only)
  */

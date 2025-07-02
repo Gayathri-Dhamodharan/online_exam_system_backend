@@ -97,6 +97,27 @@ exports.getQuestion = async (req, res) => {
   }
 };
 
+exports.getQuestionuser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid question ID." });
+    }
+
+    const q = await Question.findById(id)
+      .populate("userId.id", "name role")
+      .populate("class.name", "name")
+    if (!q) {
+      return res.status(404).json({ error: "Question not found." });
+    }
+
+    return res.json(q);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Server error." });
+  }
+};
+
 exports.deleteQuestion = async (req, res) => {
   try {
     const { id } = req.params;

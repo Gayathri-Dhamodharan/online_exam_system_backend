@@ -5,7 +5,9 @@ const GRADE_ENUM = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 
 const examSchema = new Schema(
   {
-    // Who created/launched the exam
+    title: {
+      type: String,
+    },
     createdBy: {
       id: {
         type: Schema.Types.ObjectId,
