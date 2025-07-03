@@ -122,6 +122,7 @@ examSchema.pre("save", function (next) {
     this.passMark = 0;
   }
   next();
-});
+}
+);
 
 module.exports = mongoose.model("Exam", examSchema);

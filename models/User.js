@@ -39,8 +39,10 @@ const userSchema = new mongoose.Schema(
     exams: [
       {
         title: String,
+        examDate: Date,
         score: Number,
         totalQues: Number,
+        subject:String,
       },
     ],
   },

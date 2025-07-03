@@ -10,7 +10,7 @@ exports.createQuestion = async (req, res) => {
       subject,
       questionType,
       questionText,
-      questionOptions,
+      options: questionOptions,
       answer,
       marks,
     } = req.body;
@@ -40,16 +40,22 @@ exports.createQuestion = async (req, res) => {
         .json({ error: "A question with that text already exists." });
     }
 
-    const q = new Question({
+    let payload = {
       userId,
       class: cls,
       subject,
       questionType,
       questionText: questionText.trim(),
-      questionOptions,
+      questionOptions: ["True","False"],
       answer,
       marks,
-    });
+    };
+
+    if(questionType == "MCQ"){
+      payload.questionOptions = questionOptions
+    }
+
+    const q = new Question(payload);
 
     await q.save();
     return res.status(201).json({ data: q });
@@ -106,7 +112,7 @@ exports.getQuestionuser = async (req, res) => {
 
     const q = await Question.findById(id)
       .populate("userId.id", "name role")
-      .populate("class.name", "name")
+      .populate("class.name", "name");
     if (!q) {
       return res.status(404).json({ error: "Question not found." });
     }
@@ -193,7 +199,7 @@ exports.updateQuestion = async (req, res) => {
       return res.status(404).json({ error: "Question not found." });
     }
 
-    return res.json({data:q});
+    return res.json({ data: q });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Server error." });
