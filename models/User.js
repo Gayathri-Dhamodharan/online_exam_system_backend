@@ -42,6 +42,7 @@ const userSchema = new mongoose.Schema(
         examDate: Date,
         score: Number,
         totalQues: Number,
+        subject:String,
       },
     ],
   },
@@ -50,4 +51,6 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("User", userSchema);
+const User = mongoose.model("Users", userSchema);
+
+module.exports = { User };

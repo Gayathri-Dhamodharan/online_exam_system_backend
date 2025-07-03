@@ -24,8 +24,9 @@ exports.createExam = async (req, res) => {
       class: examClass,
       subject,
       duration,
-      date, // from frontend (yyyy-mm-dd)
-      time,
+      startTime,
+      startDate,
+      passMark,
       selectedQuestions = [],
       isPostValidation = false,
     } = req.body;
@@ -36,24 +37,42 @@ exports.createExam = async (req, res) => {
         .status(400)
         .json({ error: "`class` and `subject` (id+name) are required" });
     }
+      
+
+
+    // const exam = new Exam({
+    //   createdBy: { id: userData._id, role: userData.role },
+    //   title: title,
+    //   class: {
+    //     id: examClass._id,
+    //     name: examClass.name,
+    //   },
+    //   subject: {
+    //     id: subject._id,
+    //     name: subject.name,
+    //   },
+    //   selectedQuestions,
+    //   duration: Number(duration),
+    //   startDate: new Date(date),
+    //   startTime: time,
+    //   passMark,
+    //   isPostValidation,
+      
+      
+    // });
 
     const exam = new Exam({
-      createdBy: { id: userData._id, role: userData.role },
-      title: title,
-      class: {
-        id: examClass._id,
-        name: examClass.name,
-      },
-      subject: {
-        id: subject._id,
-        name: subject.name,
-      },
-      selectedQuestions,
-      duration: Number(duration),
-      startDate: new Date(date),
-      startTime: time,
-      isPostValidation,
-    });
+  createdBy: { id: userData._id, role: userData.role },
+  title,
+  class: { id: examClass._id, name: examClass.name },
+  subject: { id: subject._id, name: subject.name },
+  selectedQuestions,
+  duration,       // a real Number
+  startDate,      // a real Date
+  startTime: startTime, // validated string
+  passMark,
+  isPostValidation,
+});
 
     await exam.save();
     res.status(201).json({ data: exam });
@@ -79,35 +98,6 @@ exports.getSingleExamById = async (req, res) => {
   }
 };
 
-// exports.getExam = async (req, res) => {
-//   try {
-//     const { role } = req.user;
-//     const { classId, subjId } = req.params;
-
-//     let selectField = "questionText options questionType";
-
-//     if (role == "admin") {
-//       selectField = "questionText options answer questionType";
-//     }
-//     const exam = await Exam.find({
-//       "class.id": classId,
-//       "subject.id": subjId,
-//     })
-//       .populate("class.id", { _id: 0, createdAt: 0, updatedAt: 0, __v: 0 })
-//       .populate("subject.id", "name")
-//       .populate({
-//         path: "selectedQuestions",
-//         select: selectField,
-//       });
-
-//     if (!exam) return res.status(404).json({ error: "Exam not found" });
-
-//     res.json(exam);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: "Server error" });
-//   }
-// };
 exports.getExam = async (req, res) => {
   try {
     const { role } = req.user;
@@ -126,6 +116,7 @@ exports.getExam = async (req, res) => {
       .populate({
         path: "selectedQuestions",
         select: selectField,
+
       });
 
     if (!exam || exam.length === 0) {
@@ -328,6 +319,7 @@ exports.attendExam = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
 
 exports.getAttendedExams = async (req, res) => {
   try {
