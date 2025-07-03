@@ -9,7 +9,7 @@ const { verifyToken } = require("../../middleware/userAuthToken");
 
 router.use(verifyToken);
 router.post("/create-questions", questionCtrl.createQuestion);
-router.get("/", questionCtrl.getAllQuestions);
+router.get("/getAllQuestionsForCls/:classId/:subjId", questionCtrl.getAllQuestions);
 router.get("/:id", questionCtrl.getQuestion);
 router.delete("/delete-question/:id", questionCtrl.deleteQuestion);
 router.put("/update-question/:id", questionCtrl.updateQuestion);

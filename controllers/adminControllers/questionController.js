@@ -46,13 +46,13 @@ exports.createQuestion = async (req, res) => {
       subject,
       questionType,
       questionText: questionText.trim(),
-      questionOptions: ["True","False"],
+      questionOptions: ["True", "False"],
       answer,
       marks,
     };
 
-    if(questionType == "MCQ"){
-      payload.questionOptions = questionOptions
+    if (questionType == "MCQ") {
+      payload.questionOptions = questionOptions;
     }
 
     const q = new Question(payload);
@@ -66,8 +66,14 @@ exports.createQuestion = async (req, res) => {
 };
 
 exports.getAllQuestions = async (req, res) => {
+  const { classId, subjId } = req.params;
+  console.log(classId, subjId, "classId, subjId");
+
   try {
-    const list = await Question.find()
+    const list = await Question.find({
+      "class.id": classId,
+      "subject.id": subjId,
+    })
       .populate("userId.id", "name role")
       .populate("class.id", "name")
       .populate("subject.id", "name")
