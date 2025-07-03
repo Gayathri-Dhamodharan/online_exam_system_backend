@@ -28,13 +28,12 @@ const userSchema = new mongoose.Schema(
     // Student-specific fields
     class: {
       type: String,
-      enum: ["10th Grade", "12th Grade"],
+      enum:["1","2","3","4","5","6","7","8","9","10"
+      ],
       required: true,
     },
     section: {
       type: String,
-      enum: ["A", "B", "c"],
-      required: true,
     },
     exams: [
       {
